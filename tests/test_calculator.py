@@ -3,7 +3,7 @@ Test suite for the Calculator class.
 """
 
 import pytest
-from calculator.calculator import Calculator, InvalidInputException
+from calculator.calculator import Calculator, InvalidInputException, validate_input
 
 
 class TestAddition:
@@ -114,6 +114,8 @@ class TestSubtraction:
     def test_subtract_positive_numbers(self):
         """Test subtracting positive numbers."""
         # TODO: Implement
+        calc = Calculator()
+        assert calc.subtract(5, 3) == 2
 
 
 class TestMultiplication:
@@ -122,6 +124,8 @@ class TestMultiplication:
     def test_multiply_positive_numbers(self):
         """Test multiplying positive numbers."""
         # TODO: Implement
+        calc = Calculator()
+        assert calc.multiply(5, 3) == 15
 
 
 class TestDivision:
@@ -130,6 +134,105 @@ class TestDivision:
     def test_divide_positive_numbers(self):
         """Test dividing positive numbers."""
         # TODO: Implement
+        calc = Calculator()
+        assert calc.divide(6, 3) == pytest.approx(2.0)
 
+    def test_divide_negative_numbers(self):
+        """Test dividing negative numbers."""
+        calc = Calculator()
+        assert calc.divide(-6, -3) == pytest.approx(2.0)
 
+    def test_divide_negative_and_positive(self):
+        """Test dividing negative by positive number."""
+        calc = Calculator()
+        assert calc.divide(-6, 3) == pytest.approx(-2.0)
 
+    def test_divide_zero_number(self):
+        """Test dividing zero by a positive number."""
+        calc = Calculator()
+        assert calc.divide(0, 5) == pytest.approx(0.0)
+
+    def test_divide_by_zero(self):
+        calc = Calculator()
+        with pytest.raises(ValueError, match=r"\bCannot divide by zero\b"):
+            calc.divide(5, 0)
+        
+
+class TestExceedingValue:
+    calc = Calculator()
+    def test_add_both_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        for a in A:
+            for b in A:
+                with pytest.raises(InvalidInputException):
+                    self.calc.add(a, b)
+    
+    def test_add_one_exceeding_value(self):
+        A = 1e6 + 1 , -1e6 - 1
+        B = 5 , -3
+        for a in A:
+            for b in B:
+                with pytest.raises(InvalidInputException):
+                    self.calc.add(a, b)
+
+    def test_subtract_both_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        for a in A:
+            for b in A:
+                with pytest.raises(InvalidInputException):
+                    self.calc.subtract(a, b)
+
+    
+    def test_subtract_one_exceeding_value(self):
+        A = 1e6 + 1 , -1e6 - 1
+        B = 5 , -3
+        for a in A:
+            for b in B:
+                with pytest.raises(InvalidInputException):
+                    self.calc.subtract(a, b)
+                    self.calc.subtract(b, a)
+        
+        
+
+    def test_multiply_both_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        for a in A:
+            for b in A:
+                with pytest.raises(InvalidInputException):
+                    self.calc.multiply(a, b)
+    
+    def test_multiply_one_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        B = 5 , -3
+        for a in A:
+            for b in B:
+                with pytest.raises(InvalidInputException):
+                    self.calc.multiply(a, b)
+                    self.calc.multiply(b, a)
+    
+    def test_divide_both_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        for a in A:
+            for b in A:
+                with pytest.raises(InvalidInputException):
+                    self.calc.divide(a, b)
+
+    def test_divide_one_exceeding_value(self):
+        A = 1e6 + 1, -1e6 - 1
+        B = 5 , -3
+        for a in A:
+            for b in B:
+                with pytest.raises(InvalidInputException):
+                    self.calc.divide(a, b)
+                    self.calc.divide(b, a)
+    
+    
+class TestValidateValue:
+    def test_validate_value_within_range(self):
+        validate_input([500, -300, 0, 1e6, -1e6])  # Should not raise an exception
+    def test_validate_value_exceeding_upper_limit(self):
+        with pytest.raises(InvalidInputException, match="Input value 1000001.0 is outside the valid range"):
+            validate_input([1e6 + 1])
+    def test_validate_value_exceeding_lower_limit(self):
+        with pytest.raises(InvalidInputException, match="Input value -1000001.0 is outside the valid range"):
+            validate_input([-1e6 - 1])
