@@ -1,164 +1,37 @@
-# Calculator
+# Instructions
 
-A Python calculator implementation with comprehensive test coverage and input validation.
-This Calculator can handle the values up to 1000000 (Not implemented yet on purpose)
+## 1. Fork and Run Workflow
+1. Fork this repository.
+2. Go to the **Actions** tab.
+3. Click the green button labeled **"I understand my workflows, go ahead and enable them"**.
+4. Select **"Python Atheris Fuzzing"** from the left sidebar.
+5. Click the **Run workflow** button.
+6. Inspect the logs and output.
 
-## Features
+<img width="1175" height="606" alt="image" src="https://github.com/user-attachments/assets/782dad16-1d92-426c-9b46-8213dd63bac1" />
+<img width="836" height="454" alt="image" src="https://github.com/user-attachments/assets/3b06e9eb-65bf-4b3b-936a-7e2f16fbf852" />
 
-- **Basic Operations**: Addition, subtraction, multiplication, division
+## 2. Trigger a Crash
+*Recommendation: Clone your forked repository to your local machine for the following steps.*
 
-## Installation
+1. Uncomment the `modulo` function code in the following files:
+   - `src/calculator/calculator.py`
+   - `fuzz/fuzz_calculator.py`
+2. Push your changes. This will automatically trigger the GitHub Action, which is expected to fail.
+3. Click on the failed workflow, select **fuzzing** under the "Jobs" section, and check the failed step labeled **"Fuzzing (Generate Corpus)"**.
+4. The error details and the specific input that caused the crash will be displayed. Use this information to fix the code.
 
-1. Fork and Clone the repository:
-```bash
-git clone https://github.com/Yutaro-Kashiwa/SystemDevelopment5th.git
-cd SystemDevelopment5th
-```
+<img width="399" height="501" alt="image" src="https://github.com/user-attachments/assets/90409fda-725b-4d2e-a24c-261b26d2c920" />
 
-2. Create a virtual environment:
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-```
+## 3. Enable Fuzzing for Other Files
+Try editing the configuration to enable fuzzing for other files.
 
-3. Install dependencies:
-```bash
-pip install pytest pytest-cov
-```
+1. First, ensure that the Fuzzing process runs successfully.
+2. Next, implement the necessary error handling (likely in two places).3. Finally, ensure that the code explicitly raises `InvalidExpressionException` for invalid inputs.
 
-## Usage
-
-### Basic Usage
-
-```python
-from src.calculator.calculator import Calculator
-
-# Create calculator instance
-calc = Calculator()
-
-# Basic operations
-result = calc.add(5, 3)         # 8
-result = calc.subtract(10, 3)   # 7
-result = calc.multiply(4, 5)    # 20
-result = calc.divide(10, 2)     # 5.0
-
-# Advanced operations
-result = calc.power(2, 3)       # 8
-result = calc.square_root(16)   # 4.0
-result = calc.modulo(10, 3)     # 1
-```
-
-
-## Testing
-
-### Run All Tests
-
-```bash
-pytest tests/
-```
-
-### Run Tests with Verbose Output
-
-```bash
-pytest tests/test_calculator.py -v
-```
-
-### Generate Coverage Report
-
-```bash
-pytest --cov=src --cov-report=html tests/
-```
-
-View the HTML report:
-```bash
-open htmlcov/index.html
-```
-
-## Project Structure
-
-```
-SystemDevelopment5th/
-├── src/
-│   └── calculator/
-│       ├── __init__.py
-│       └── calculator.py          # Calculator implementation
-├── tests/
-│   ├── __init__.py
-│   └── test_calculator.py         # Test suite (67 tests)
-├── .gitignore
-├── .coveragerc                    # Coverage configuration
-├── setup.cfg                      # Project configuration
-└── README.md
-```
-
-## API Documentation
-
-### Calculator Class
-
-#### Methods
-
-**`add(a, b)`**
-- Adds two numbers
-- Raises `InvalidInputException` if inputs are outside valid range
-- Returns: Sum of a and b
-
-**`subtract(a, b)`**
-- Subtracts b from a
-- Raises `InvalidInputException` if inputs are outside valid range
-- Returns: Difference of a and b
-
-**`multiply(a, b)`**
-- Multiplies two numbers
-- Raises `InvalidInputException` if inputs are outside valid range
-- Returns: Product of a and b
-
-**`divide(a, b)`**
-- Divides a by b
-- Raises `InvalidInputException` if inputs are outside valid range
-- Raises `ValueError` if b is zero
-- Returns: Quotient of a and b
-
-### Constants
-
-- `MAX_VALUE = 1000000`: Maximum allowed input value
-- `MIN_VALUE = -1000000`: Minimum allowed input value
-
-### Exceptions
-
-**`InvalidInputException`**
-- Raised when input values are outside the valid range [-1000000, 1000000]
-- Inherits from `Exception`
-
-
-### Code Quality
-
-The project follows Python best practices:
-- Comprehensive docstrings for all methods
-- Type hints where applicable
-- Error handling for edge cases
-- Input validation
-- AAA test pattern
-
-## Requirements
-
-- Python 3.12+
-- pytest 9.0+
-- pytest-cov 7.0+
-
-## License
-
-This project is for educational purposes.
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-1. All tests pass
-2. New features include tests
-3. Tests follow AAA pattern
-4. Code includes proper documentation
-
-## Author
-
-Yutaro Kashiwa
-
-
+### Hints
+**Files requiring modification:**
+- `.github/workflows/python_fuzz.yml`
+- `fuzz/fuzz_string_calculator.py`
+- `fuzz/repro_coverage.py`
+- `src/calculator/string_calculator.py`

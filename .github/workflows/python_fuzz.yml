@@ -1,0 +1,76 @@
+# .github/workflows/python_fuzz.yml
+
+name: Python Atheris Fuzzing
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  fuzzing:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install atheris coverage pytest
+
+      # 1. Fuzzer Execution (Generation Phase)
+      # This step runs the actual fuzzing logic using Atheris.
+      # - Sets PYTHONPATH so the script can import modules from the current directory.
+      # - Creates 'corpus_calc' to store interesting inputs found by the fuzzer.
+      # - Runs 'fuzz_calculator.py' with a 120-second time limit (-max_total_time=120).
+      - name: Fuzzing (Generate Corpus)
+        run: |
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          
+          echo "--- Fuzzing Calculator ---"
+          mkdir -p corpus_calc
+          python fuzz/fuzz_calculator.py corpus_calc -max_total_time=120
+          
+      # 2. Coverage Collection (Replay Phase)
+      # This step separates crash handling from coverage measurement.
+      # - Moves any crash/leak/timeout files generated in the previous step to a 'crashes' folder.
+      # - Runs 'repro_coverage.py' using the 'coverage' tool.
+      #   This script replays all inputs from 'corpus_calc' (valid inputs) and 'crashes' (failing inputs)
+      #   to accurately measure which lines of code were executed during fuzzing.
+      - name: Coverage Collection
+        run: |
+          mkdir -p crashes
+          # Move crash artifacts to a specific directory to keep the workspace clean
+          mv crash-* crashes/ || true
+          mv leak-* crashes/ || true
+          mv timeout-* crashes/ || true
+          
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          # Replay inputs to collect coverage data
+          coverage run --source=src fuzz/repro_coverage.py corpus_calc crashes
+
+      # 3. Report Generation
+      # Converts the collected coverage data into a human-readable HTML report.
+      - name: Generate Report
+        run: coverage html -d coverage-report
+
+      # 4. Bundle Artifacts
+      # Organizes all results (report, corpus, crashes) into a single folder for easy download.
+      - name: Bundle Artifacts
+        run: |
+          mkdir -p fuzzing_results
+          mv coverage-report fuzzing_results/
+          cp -r corpus_calc fuzzing_results/
+          cp -r crashes fuzzing_results/
+
+      # 5. Upload Artifacts
+      # Uploads the 'fuzzing_results' folder to GitHub Actions.
+      # You can download the 'all-fuzzing-results.zip' file from the workflow summary page.
+      - name: Upload All Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: all-fuzzing-results
+          path: fuzzing_results/
